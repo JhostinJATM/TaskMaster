@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tareas - TaskMaster Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-tasks"></i>
+                    <h1>TaskMaster Pro</h1>
+                </div>
+                <div class="stats-summary" id="statsSummary">
+                    <div class="stat-item">
+                        <i class="fas fa-list-check"></i>
+                        <span id="totalTasks">0</span>
+                        <span class="stat-label">Total</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="completedTasks">0</span>
+                        <span class="stat-label">Completadas</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <span id="pendingTasks">0</span>
+                        <span class="stat-label">Pendientes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Add Task Section -->
+            <section class="add-task-section">
+                <div class="add-task-card">
+                    <h2><i class="fas fa-plus-circle"></i> Crear Nueva Tarea</h2>
+                    <form id="taskForm">
+                        <div class="form-group">
+                            <label for="taskTitle">
+                                <i class="fas fa-heading"></i> Título
+                            </label>
+                            <input 
+                                type="text" 
+                                id="taskTitle" 
+                                placeholder="Ej: Completar el proyecto de Flask" 
+                                required
+                                maxlength="100"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="taskDescription">
+                                <i class="fas fa-align-left"></i> Descripción
+                            </label>
+                            <textarea 
+                                id="taskDescription" 
+                                placeholder="Describe tu tarea con más detalle..."
+                                rows="3"
+                                maxlength="500"
+                            ></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskPriority">
+                                <i class="fas fa-flag"></i> Prioridad
+                            </label>
+                            <select id="taskPriority">
+                                <option value="low">🟢 Baja</option>
+                                <option value="medium" selected>🟡 Media</option>
+                                <option value="high">🔴 Alta</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Agregar Tarea
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Filter Section -->
+            <section class="filter-section">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">
+                        <i class="fas fa-list"></i> Todas
+                    </button>
+                    <button class="filter-btn" data-filter="pending">
+                        <i class="fas fa-hourglass-half"></i> Pendientes
+                    </button>
+                    <button class="filter-btn" data-filter="completed">
+                        <i class="fas fa-check-double"></i> Completadas
+                    </button>
+                    <button class="filter-btn" data-filter="high">
+                        <i class="fas fa-exclamation-circle"></i> Alta Prioridad
+                    </button>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar tareas...">
+                </div>
+            </section>
+
+            <!-- Tasks List Section -->
+            <section class="tasks-section">
+                <h2 class="section-title">
+                    <i class="fas fa-clipboard-list"></i> Mis Tareas
+                </h2>
+                <div id="tasksList" class="tasks-list">
+                    <!-- Tasks will be dynamically inserted here -->
+                </div>
+                <div id="emptyState" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No hay tareas</h3>
+                    <p>¡Comienza agregando tu primera tarea!</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Editar Tarea</h2>
+                <button class="close-modal" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editTaskForm">
+                <input type="hidden" id="editTaskId">
+                <div class="form-group">
+                    <label for="editTaskTitle">
+                        <i class="fas fa-heading"></i> Título
+                    </label>
+                    <input 
+                        type="text" 
+                        id="editTaskTitle" 
+                        required
+                        maxlength="100"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDescription">
+                        <i class="fas fa-align-left"></i> Descripción
+                    </label>
+                    <textarea 
+                        id="editTaskDescription" 
+                        rows="3"
+                        maxlength="500"
+                    ></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskPriority">
+                        <i class="fas fa-flag"></i> Prioridad
+                    </label>
+                    <select id="editTaskPriority">
+                        <option value="low">🟢 Baja</option>
+                        <option value="medium">🟡 Media</option>
+                        <option value="high">🔴 Alta</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>
+                <i class="fas fa-code"></i> 
+                Creado con Flask, HTML, CSS y JavaScript
+                <i class="fas fa-heart"></i>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
